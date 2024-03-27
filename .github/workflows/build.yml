@@ -9,9 +9,6 @@ jobs:
     build:
         runs-on: windows-latest
 
-        permissions:
-            contents: write
-
         steps:
             - uses: actions/checkout@v2
 
@@ -32,11 +29,46 @@ jobs:
             - name: Build Linux x64
               run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
 
-            - name: Release
-              uses: softprops/action-gh-release@v2
-              if: startsWith(github.ref, 'refs/tags/')
+            - name: Create Release
+              id: create_release
+              uses: actions/create-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  files: |
-                      bin/Release/netcoreapp3.1/win-x64/publish/ThunderStoreModTemplateGenerator.exe
-                      bin/Release/netcoreapp3.1/osx-x64/publish/ThunderStoreModTemplateGenerator
-                      bin/Release/netcoreapp3.1/linux-x64/publish/ThunderStoreModTemplateGenerator
+                  tag_name: ${{ github.ref }}
+                  release_name: Release ${{ github.ref }}
+                  draft: false
+                  prerelease: false
+
+            - name: Upload Release Asset Windows
+              id: upload-release-asset-win
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/Release/netcoreapp3.1/win-x64/publish/ThunderStoreModTemplateGenerator.exe
+                  asset_name: win-x64.exe
+                  asset_content_type: application/vnd.microsoft.portable-executable
+
+            - name: Upload Release Asset macOS
+              id: upload-release-asset-osx
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/Release/netcoreapp3.1/osx-x64/publish/ThunderStoreModTemplateGenerator
+                  asset_name: osx-x64
+                  asset_content_type: application/octet-stream
+
+            - name: Upload Release Asset Linux
+              id: upload-release-asset-linux
+              uses: actions/upload-release-asset@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  upload_url: ${{ steps.create_release.outputs.upload_url }}
+                  asset_path: ./bin/Release/netcoreapp3.1/linux-x64/publish/ThunderStoreModTemplateGenerator
+                  asset_name: linux-x64
+                  asset_content_type: application/octet-stream
