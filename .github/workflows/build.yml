@@ -9,6 +9,9 @@ jobs:
     build:
         runs-on: windows-latest
 
+        permissions:
+            contents: write
+
         steps:
             - uses: actions/checkout@v2
 
@@ -29,11 +32,11 @@ jobs:
             - name: Build Linux x64
               run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
 
-            - name: Upload Artifacts
-              uses: actions/upload-artifact@v2
+            - name: Release
+              uses: softprops/action-gh-release@v2
+              # if: startsWith(github.ref, 'refs/tags/')
               with:
-                  name: packages
-                  path: |
-                      bin/Release/netcoreapp3.1/win-x64/publish
-                      bin/Release/netcoreapp3.1/osx-x64/publish
-                      bin/Release/netcoreapp3.1/linux-x64/publish
+                  files: |
+                      bin/Release/netcoreapp3.1/win-x64/publish/ThunderStoreModTemplateGenerator.exe
+                      bin/Release/netcoreapp3.1/osx-x64/publish/ThunderStoreModTemplateGenerator
+                      bin/Release/netcoreapp3.1/linux-x64/publish/ThunderStoreModTemplateGenerator
