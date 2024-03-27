@@ -1,0 +1,99 @@
+name: Build .NET Core App
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+jobs:
+    build:
+        strategy:
+            matrix:
+                os: [windows-latest, ubuntu-latest, macos-latest]
+        runs-on: ${{ matrix.os }}
+
+        steps:
+            - uses: actions/checkout@v2
+            - name: Setup .NET Core
+              uses: actions/setup-dotnet@v1
+              with:
+                  dotnet-version: 3.1.x
+
+            - name: Build for Windows x64
+              if: matrix.os == 'windows-latest'
+              run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+
+            - name: Build for Linux x64
+              if: matrix.os == 'ubuntu-latest'
+              run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+
+            - name: Build for macOS x64
+              if: matrix.os == 'macos-latest'
+              run: dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+
+            - name: Upload Artifact
+              uses: actions/upload-artifact@v2
+              with:
+                  name: app-${{ matrix.os }}
+                  path: ./bin/Release/netcoreapp3.1/**/publish/
+
+            - name: Create Release
+              if: startsWith(github.ref, 'refs/tags/')
+              runs-on: ubuntu-latest
+              needs: build
+              steps:
+                  - name: Download Artifacts
+                    uses: actions/download-artifact@v2
+                    with:
+                        path: artifacts
+
+                  - name: Create Release
+                    id: create_release
+                    uses: actions/create-release@v1
+                    env:
+                        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    with:
+                        tag_name: ${{ github.ref }}
+                        release_name: Release ${{ github.ref }}
+                        draft: false
+                        prerelease: false
+
+                  - name: Zip Release Asset (Windows)
+                    run: zip -r ./artifacts/app-windows-latest.zip ./artifacts/app-windows-latest/publish/*
+
+                  - name: Upload Release Asset (Windows)
+                    uses: actions/upload-release-asset@v1
+                    env:
+                        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    with:
+                        upload_url: ${{ steps.create_release.outputs.upload_url }}
+                        asset_path: ./artifacts/app-windows-latest.zip
+                        asset_name: app-windows-x64.zip
+                        asset_content_type: application/zip
+
+                  - name: Zip Release Asset (Linux)
+                    run: zip -r ./artifacts/app-linux-latest.zip ./artifacts/app-ubuntu-latest/publish/* -x '*.pdb'
+
+                  - name: Upload Release Asset (Linux)
+                    uses: actions/upload-release-asset@v1
+                    env:
+                        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    with:
+                        upload_url: ${{ steps.create_release.outputs.upload_url }}
+                        asset_path: ./artifacts/app-linux-latest.zip
+                        asset_name: app-linux-x64.zip
+                        asset_content_type: application/zip
+
+                  - name: Zip Release Asset (macOS)
+                    run: zip -r ./artifacts/app-macos-latest.zip ./artifacts/app-macos-latest/publish/* -x '*.pdb'
+
+                  - name: Upload Release Asset (macOS)
+                    uses: actions/upload-release-asset@v1
+                    env:
+                        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                    with:
+                        upload_url: ${{ steps.create_release.outputs.upload_url }}
+                        asset_path: ./artifacts/app-macos-latest.zip
+                        asset_name: app-macos-x64.zip
+                        asset_content_type: application/zip
