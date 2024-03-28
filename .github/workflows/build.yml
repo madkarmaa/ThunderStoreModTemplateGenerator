@@ -16,13 +16,13 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v4
 
-            - name: Subtract 11 from run number
+            - name: Get version number
               id: subtract_run_number
-              run: echo "::set-output name=result::$(echo "${{ github.run_number }}" - 11 | bc)"
+              run: echo "result=$(echo "${{ github.run_number }}" - 12 | bc)" >> $GITHUB_OUTPUT
               shell: bash
 
             - name: Setup .NET Core
-              uses: actions/setup-dotnet@v1
+              uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 3.1.x
 
