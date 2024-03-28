@@ -14,7 +14,12 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@v2
+              uses: actions/checkout@v4
+
+            - name: Subtract 11 from run number
+              id: subtract_run_number
+              run: echo "::set-output name=result::$(echo "${{ github.run_number }}" - 11 | bc)"
+              shell: bash
 
             - name: Setup .NET Core
               uses: actions/setup-dotnet@v1
@@ -42,8 +47,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: ${{ github.run_number }}
-                  release_name: Release ${{ github.run_number }}
+                  tag_name: ${{ steps.subtract_run_number.outputs.result }}
+                  release_name: v${{ steps.subtract_run_number.outputs.result }}
                   draft: false
                   prerelease: false
 
