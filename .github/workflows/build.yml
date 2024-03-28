@@ -10,10 +10,11 @@ permissions:
 
 jobs:
     build:
-        runs-on: windows-latest
+        runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v2
+            - name: Checkout code
+              uses: actions/checkout@v2
 
             - name: Setup .NET Core
               uses: actions/setup-dotnet@v1
@@ -25,12 +26,15 @@ jobs:
 
             - name: Build Windows x64
               run: dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+              working-directory: ${{ github.workspace }}
 
             - name: Build macOS x64
               run: dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+              working-directory: ${{ github.workspace }}
 
             - name: Build Linux x64
               run: dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -p:PublishTrimmed=true
+              working-directory: ${{ github.workspace }}
 
             - name: Create Release
               id: create_release
@@ -38,13 +42,12 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: ${{ github.ref }}
-                  release_name: Release ${{ github.ref }}
+                  tag_name: ${{ github.run_number }}
+                  release_name: Release ${{ github.run_number }}
                   draft: false
                   prerelease: false
 
-            - name: Upload Release Asset Windows
-              id: upload-release-asset-win
+            - name: Upload Windows Executable
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,10 +55,9 @@ jobs:
                   upload_url: ${{ steps.create_release.outputs.upload_url }}
                   asset_path: ./bin/Release/netcoreapp3.1/win-x64/publish/ThunderStoreModTemplateGenerator.exe
                   asset_name: win-x64.exe
-                  asset_content_type: application/vnd.microsoft.portable-executable
+                  asset_content_type: application/octet-stream
 
-            - name: Upload Release Asset macOS
-              id: upload-release-asset-osx
+            - name: Upload macOS Executable
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -65,8 +67,7 @@ jobs:
                   asset_name: osx-x64
                   asset_content_type: application/octet-stream
 
-            - name: Upload Release Asset Linux
-              id: upload-release-asset-linux
+            - name: Upload Linux Executable
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
