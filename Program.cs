@@ -15,7 +15,7 @@ namespace ThunderStoreModTemplateGenerator
 
         static void Main(string[] args)
         {
-            string name = Prompt.Input<string>("Name", "MyAwesomeMod", validators: new[] {
+            string name = Prompt.Input<string>("Mod name", "MyAwesomeMod", validators: new[] {
                 Validators.RegularExpression("^[\\w]+$", "Only letters and underscores are allowed")
             });
 
@@ -53,7 +53,7 @@ namespace ThunderStoreModTemplateGenerator
             File.WriteAllText(name + "/README.md", GenerateReadmeString(name, longDesc));
 
             Console.Write(Bold(Red("\nRemember to add a 256x256 px icon.png image!!! ")));
-            Console.WriteLine(Cyan("https://thunderstore.io/c/plasma/create/docs"));
+            Console.WriteLine(Cyan("Read more: https://thunderstore.io/c/plasma/create/docs"));
             Console.ReadKey();
         }
 
