@@ -2,18 +2,19 @@ name: Build and Release
 
 on:
     push:
-        branches:
-            - main
+        paths:
+            - 'Program.cs'
+    workflow_dispatch:
 
 permissions:
     contents: write
 
 jobs:
-    build:
+    build-and-release:
         runs-on: ubuntu-latest
 
         steps:
-            - name: Checkout code
+            - name: Checkout repository
               uses: actions/checkout@v4
 
             - name: Get version number
@@ -21,7 +22,7 @@ jobs:
               run: echo "result=$(echo "${{ github.run_number }}" - 12 | bc)" >> $GITHUB_OUTPUT
               shell: bash
 
-            - name: Setup .NET Core
+            - name: Setup .NET Core 3.1
               uses: actions/setup-dotnet@v4
               with:
                   dotnet-version: 3.1.x
@@ -52,7 +53,7 @@ jobs:
                   draft: false
                   prerelease: false
 
-            - name: Upload Windows Executable
+            - name: Upload Windows executable
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,7 +63,7 @@ jobs:
                   asset_name: win-x64.exe
                   asset_content_type: application/octet-stream
 
-            - name: Upload macOS Executable
+            - name: Upload MacOS executable
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -72,7 +73,7 @@ jobs:
                   asset_name: osx-x64
                   asset_content_type: application/octet-stream
 
-            - name: Upload Linux Executable
+            - name: Upload Linux executable
               uses: actions/upload-release-asset@v1
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
