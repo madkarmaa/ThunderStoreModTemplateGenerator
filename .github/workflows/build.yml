@@ -19,7 +19,7 @@ jobs:
 
             - name: Get version number
               id: subtract_run_number
-              run: echo "result=$(echo "${{ github.run_number }}" - 12 | bc)" >> $GITHUB_OUTPUT
+              run: echo "version=$(echo "${{ github.run_number }}" - 12 | bc)" >> $GITHUB_OUTPUT
               shell: bash
 
             - name: Setup .NET Core 3.1
@@ -48,8 +48,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                  tag_name: ${{ steps.subtract_run_number.outputs.result }}
-                  release_name: v${{ steps.subtract_run_number.outputs.result }}
+                  tag_name: ${{ steps.subtract_run_number.outputs.version }}
+                  release_name: v${{ steps.subtract_run_number.outputs.version }}
                   draft: false
                   prerelease: false
 
