@@ -15,15 +15,15 @@ ThunderStoreModTemplateGenerator is a command-line tool designed to simplify the
 
     - Execute the downloaded executable.
 
-3. **Fill in Information**:
+3. **Fill in information**:
 
     - Follow the prompts to provide information about your mod.
 
-4. **Generate Files**:
+4. **Generate files**:
 
     - The program will automatically generate the necessary files and directory structure for your mod.
 
-5. **Access Generated Files**:
+5. **Access generated files**:
     - The files are created in a folder named after your mod's name, within the directory where the executable is run.
 
 ## Screenshots
